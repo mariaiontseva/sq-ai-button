@@ -22,11 +22,10 @@
     }
 
     /* Main container - positioned bottom right */
-    /* Right: 32px - 4px padding - 1px border = 27px */
     .ai-assistant {
       position: fixed;
       bottom: 32px;
-      right: 27px;
+      right: 32px;
       z-index: 1000;
     }
 
@@ -47,22 +46,25 @@
       pointer-events: none;
     }
 
-    /* The pill - starts as just circle size, expands right */
+    /* The pill - starts as just circle size, expands left */
     .ai-button-pill {
+      position: absolute;
+      right: 0;
       display: flex;
       align-items: center;
-      height: 48px;
-      padding: 4px;
+      height: 40px;
+      padding: 0;
       background: transparent;
-      border: 1px solid transparent;
+      border: none;
       border-radius: 24px;
       transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
     .ai-button:hover .ai-button-pill {
-      padding-right: 18px;
+      height: 48px;
+      padding: 4px 18px 4px 4px;
       background: hsla(295, 50%, 95%, 1);
-      border-color: #AE39C6;
+      border: 1px solid #AE39C6;
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
     }
 
@@ -333,7 +335,12 @@
     @media (max-width: 599px) {
       .ai-assistant {
         right: auto;
-        left: 27px; /* 32px - 4px padding - 1px border */
+        left: 32px;
+      }
+
+      .ai-button-pill {
+        right: auto;
+        left: 0;
       }
 
       .ai-button {
