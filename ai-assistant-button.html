@@ -25,8 +25,8 @@
     /* Circle edge at 36px from right and bottom */
     .ai-assistant {
       position: fixed;
-      bottom: 32px; /* 36px - 4px (centering in 48px pill) */
-      right: 31px;  /* 36px - 5px (4px padding + 1px border) */
+      bottom: 32px;
+      right: 21px;  /* 46 - 10 = 36px */
       z-index: 1000;
     }
 
@@ -335,7 +335,7 @@
     @media (max-width: 599px) {
       .ai-assistant {
         right: auto;
-        left: 31px; /* 36px - 5px offset */
+        left: 21px;
       }
 
       .ai-button-pill {
