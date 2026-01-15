@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Assistant Button</title>
+  <link href="https://fonts.cdnfonts.com/css/proxima-nova-2" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #f5f5f5;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Proxima Nova', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    /* Main container - positioned bottom right */
+    .ai-assistant {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      z-index: 1000;
+    }
+
+    /* ========== BUTTON STATES ========== */
+    .ai-button {
+      position: relative;
+      height: 40px;
+      cursor: pointer;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .ai-button.hidden {
+      opacity: 0;
+      transform: scale(0.8);
+      pointer-events: none;
+    }
+
+    /* The pill - starts as just circle size, expands right */
+    .ai-button-pill {
+      display: flex;
+      align-items: center;
+      height: 48px;
+      padding: 4px;
+      padding-right: 4px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 24px;
+      transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+      transform: translateY(-4px);
+    }
+
+    .ai-button:hover .ai-button-pill {
+      background: hsla(295, 50%, 95%, 1);
+      border-color: #AE39C6;
+      padding-right: 18px;
+    }
+
+    /* The purple circle */
+    .ai-button-circle {
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      background: #AE39C6;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+      transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    /* Gentle swing animation */
+    @keyframes swing {
+      0% { transform: rotate(0deg); }
+      30% { transform: rotate(-8deg); }
+      70% { transform: rotate(5deg); }
+      100% { transform: rotate(0deg); }
+    }
+
+    .ai-button:hover .ai-button-circle {
+      animation: swing 0.6s ease-in-out;
+    }
+
+    /* Icon with subtle pulse */
+    .ai-icon {
+      width: 24px;
+      height: 24px;
+      fill: white;
+      transition: transform 0.3s ease;
+    }
+
+    .ai-button:hover .ai-icon {
+      transform: scale(1.1);
+    }
+
+    /* Ask AI text */
+    .ai-button-text {
+      color: #AE39C6;
+      font-family: 'Proxima Nova', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      white-space: nowrap;
+      margin-left: 10px;
+      opacity: 0;
+      max-width: 0;
+      overflow: hidden;
+      transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .ai-button:hover .ai-button-text {
+      opacity: 1;
+      max-width: 100px;
+    }
+
+    /* ========== CHAT PANEL ========== */
+    .ai-panel {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 420px;
+      max-height: calc(100vh - 32px - 32px - 44px);
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
+      overflow: visible;
+      opacity: 0;
+      transform: scale(0.9) translateY(20px);
+      transform-origin: bottom right;
+      transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+      pointer-events: none;
+    }
+
+    .ai-panel.open {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      pointer-events: all;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Close button - circular with X icon */
+    .ai-panel-close {
+      position: absolute;
+      top: -36px;
+      right: 0;
+      width: 28px;
+      height: 28px;
+      background: #AE39C6;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s ease;
+      z-index: 10;
+    }
+
+    .ai-panel-close:hover {
+      background: #842697;
+    }
+
+    .ai-panel-close svg {
+      width: 10px;
+      height: 10px;
+    }
+
+    .ai-panel-close svg path {
+      fill: white;
+      opacity: 1;
+    }
+
+    /* Header */
+    .ai-panel-header {
+      background: linear-gradient(180deg, #f8f4fa 0%, #f0f8ff 50%, #f5fff8 100%);
+      padding: 50px 24px 24px;
+      text-align: center;
+      position: relative;
+      border-radius: 16px 16px 0 0;
+    }
+
+    .ai-panel-icon {
+      width: 56px;
+      height: 56px;
+      background: white;
+      border: 1px solid #AE39C6;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+    }
+
+    .ai-panel-icon svg {
+      width: 28px;
+      height: 28px;
+      fill: #AE39C6;
+    }
+
+    .ai-panel-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    /* Back arrow */
+    .ai-panel-back {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+      color: #666;
+      transition: color 0.2s ease;
+    }
+
+    .ai-panel-back:hover {
+      color: #AE39C6;
+    }
+
+    /* Chat content */
+    .ai-panel-content {
+      padding: 20px 24px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    /* AI message */
+    .ai-message-label {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 8px;
+    }
+
+    .ai-message {
+      background: #f5f5f5;
+      border-radius: 16px;
+      border-top-left-radius: 4px;
+      padding: 16px;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #333;
+      margin-bottom: 24px;
+    }
+
+    .ai-message a {
+      color: #2196F3;
+      text-decoration: none;
+    }
+
+    .ai-message a:hover {
+      text-decoration: underline;
+    }
+
+    /* Suggestions */
+    .ai-suggestions-label {
+      font-size: 12px;
+      color: #888;
+      text-align: right;
+      margin-bottom: 12px;
+    }
+
+    .ai-suggestion {
+      display: block;
+      width: 100%;
+      padding: 14px 16px;
+      margin-bottom: 8px;
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      font-size: 14px;
+      color: #333;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .ai-suggestion:hover {
+      border-color: #AE39C6;
+      background: hsla(295, 50%, 98%, 1);
+    }
+
+    /* Input area */
+    .ai-panel-input {
+      padding: 16px 24px;
+      border-top: 1px solid #eee;
+    }
+
+    .ai-panel-input input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .ai-panel-input input:focus {
+      border-color: #AE39C6;
+    }
+
+    .ai-panel-input input::placeholder {
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ai-assistant">
+    <!-- Button -->
+    <div class="ai-button" id="aiButton" onclick="openPanel()">
+      <div class="ai-button-pill">
+        <div class="ai-button-circle">
+          <svg class="ai-icon" viewBox="-5 -10 110 120">
+            <path d="m74.773 57.645c-17.676 5.8398-23.562 11.727-29.402 29.402-0.48047 1.4531-2.5352 1.4531-3.0156 0-5.8398-17.676-11.727-23.562-29.402-29.402-1.4531-0.48047-1.4531-2.5352 0-3.0156 17.676-5.8398 23.562-11.727 29.402-29.402 0.48047-1.4531 2.5352-1.4531 3.0156 0 5.8398 17.676 11.727 23.562 29.402 29.402 1.4531 0.48047 1.4531 2.5352 0 3.0156z"/>
+            <path d="m87.594 28.617c-8.8359 2.918-11.781 5.8633-14.703 14.703-0.23828 0.72656-1.2656 0.72656-1.5078 0-2.918-8.8359-5.8633-11.781-14.703-14.703-0.72656-0.23828-0.72656-1.2656 0-1.5078 8.8359-2.918 11.781-5.8633 14.703-14.703 0.23828-0.72656 1.2656-0.72656 1.5078 0 2.918 8.8359 5.8633 11.781 14.703 14.703 0.72656 0.23828 0.72656 1.2656 0 1.5078z"/>
+          </svg>
+        </div>
+        <span class="ai-button-text">Ask AI</span>
+      </div>
+    </div>
+
+    <!-- Chat Panel -->
+    <div class="ai-panel" id="aiPanel">
+      <!-- Close button above panel -->
+      <button class="ai-panel-close" onclick="closePanel()">
+        <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0.390886 1.73397C0.0419312 1.3893 0.0415916 0.826026 0.390129 0.480933C0.733217 0.141238 1.28578 0.140902 1.62928 0.480179L8.90301 7.66448C9.68234 8.43423 10.9359 8.43386 11.7147 7.66365L18.9839 0.475265C19.3272 0.135769 19.8798 0.135769 20.2231 0.475266C20.5719 0.820176 20.5719 1.38351 20.2231 1.72842L13.0021 8.86897C12.2101 9.65211 12.2105 10.9313 13.0029 11.714L20.2283 18.8506C20.5773 19.1953 20.5776 19.7587 20.2291 20.1038C19.8859 20.4436 19.3333 20.4439 18.9897 20.1046L11.7162 12.9202C10.9368 12.1505 9.68331 12.1508 8.90443 12.921L1.63491 20.1097C1.29164 20.4491 0.739132 20.4491 0.395864 20.1097C0.0471249 19.7648 0.0471249 19.2015 0.395864 18.8567L7.61713 11.7157C8.40908 10.9326 8.4087 9.65336 7.6163 8.87068L0.390886 1.73397Z" fill="white"/>
+        </svg>
+      </button>
+
+      <!-- Header -->
+      <div class="ai-panel-header">
+        <button class="ai-panel-back" onclick="closePanel()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <div class="ai-panel-icon">
+          <svg viewBox="-5 -10 110 120">
+            <path d="m74.773 57.645c-17.676 5.8398-23.562 11.727-29.402 29.402-0.48047 1.4531-2.5352 1.4531-3.0156 0-5.8398-17.676-11.727-23.562-29.402-29.402-1.4531-0.48047-1.4531-2.5352 0-3.0156 17.676-5.8398 23.562-11.727 29.402-29.402 0.48047-1.4531 2.5352-1.4531 3.0156 0 5.8398 17.676 11.727 23.562 29.402 29.402 1.4531 0.48047 1.4531 2.5352 0 3.0156z"/>
+            <path d="m87.594 28.617c-8.8359 2.918-11.781 5.8633-14.703 14.703-0.23828 0.72656-1.2656 0.72656-1.5078 0-2.918-8.8359-5.8633-11.781-14.703-14.703-0.72656-0.23828-0.72656-1.2656 0-1.5078 8.8359-2.918 11.781-5.8633 14.703-14.703 0.23828-0.72656 1.2656-0.72656 1.5078 0 2.918 8.8359 5.8633 11.781 14.703 14.703 0.72656 0.23828 0.72656 1.2656 0 1.5078z"/>
+          </svg>
+        </div>
+        <h2 class="ai-panel-title">AI Answers</h2>
+      </div>
+
+      <!-- Content -->
+      <div class="ai-panel-content">
+        <div class="ai-message-label">AI assistant</div>
+        <div class="ai-message">
+          👋 Hi there! I can help you find answers from the SmarterQueue <a href="#">Help Center</a> or guide you to the right next step. What would you like to know today?
+        </div>
+
+        <div class="ai-suggestions-label">Suggestions</div>
+        <button class="ai-suggestion">How do Categories and the Posting Plan help automate my social media?</button>
+        <button class="ai-suggestion">How can Evergreen and Variations save me time while keeping posts fresh?</button>
+        <button class="ai-suggestion">How do Workspaces make it easier to manage multiple brands or clients?</button>
+        <button class="ai-suggestion">What roles and permissions can my team use to collaborate effectively?</button>
+      </div>
+
+      <!-- Input -->
+      <div class="ai-panel-input">
+        <input type="text" placeholder="Ask a question...">
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const button = document.getElementById('aiButton');
+    const panel = document.getElementById('aiPanel');
+
+    function openPanel() {
+      button.classList.add('hidden');
+      setTimeout(() => {
+        panel.classList.add('open');
+      }, 150);
+    }
+
+    function closePanel() {
+      panel.classList.remove('open');
+      setTimeout(() => {
+        button.classList.remove('hidden');
+      }, 200);
+    }
+  </script>
+
+</body>
+</html>
