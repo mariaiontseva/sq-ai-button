@@ -22,11 +22,11 @@
     }
 
     /* Main container - positioned bottom right */
-    /* Offset by 5px (4px padding + 1px border) so circle edge is at 32px */
+    /* Circle edge at 36px from right and bottom */
     .ai-assistant {
       position: fixed;
-      bottom: 32px;
-      right: 27px;
+      bottom: 32px; /* 36px - 4px (centering in 48px pill) */
+      right: 31px;  /* 36px - 5px (4px padding + 1px border) */
       z-index: 1000;
     }
 
@@ -335,7 +335,7 @@
     @media (max-width: 599px) {
       .ai-assistant {
         right: auto;
-        left: 27px; /* 32px - 5px offset */
+        left: 31px; /* 36px - 5px offset */
       }
 
       .ai-button-pill {
