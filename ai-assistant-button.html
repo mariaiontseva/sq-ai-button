@@ -35,6 +35,8 @@
       height: 40px;
       cursor: pointer;
       transition: opacity 0.4s ease, transform 0.4s ease;
+      display: flex;
+      justify-content: flex-end;
     }
 
     .ai-button.hidden {
@@ -325,6 +327,24 @@
 
     .ai-panel-input input::placeholder {
       color: #aaa;
+    }
+
+    /* ========== MOBILE: Under 600px ========== */
+    @media (max-width: 599px) {
+      .ai-assistant {
+        right: auto;
+        left: 32px;
+      }
+
+      .ai-button {
+        justify-content: flex-start;
+      }
+
+      .ai-panel {
+        right: auto;
+        left: 0;
+        transform-origin: bottom left;
+      }
     }
   </style>
 </head>
